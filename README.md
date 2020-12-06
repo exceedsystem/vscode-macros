@@ -25,7 +25,7 @@
     * Macro configuration settings
     * { [name: string]: {              ... Name of the macro
     *    no: number,                   ... Order of the macro
-    *    func: ()=> string | nothing   ... Name of the body of the macro function
+    *    func: ()=> string | undefined ... Name of the body of the macro function
     *  }
     * }
     */

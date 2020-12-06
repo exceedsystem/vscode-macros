@@ -3,13 +3,20 @@
 	"name": "vscode-macros",
 	"displayName": "VSCode Macros",
 	"description": "Add a simple JavaScript macro features to your VSCode",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"engines": {
 		"vscode": "^1.40.0"
 	},
 	"categories": [
 		"Other"
 	],
+	"keywords": [
+		"macro"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/exceedsystem/vscode-macros"
+	},
 	"activationEvents": [
 		"onCommand:vscode-macros.run"
 	],

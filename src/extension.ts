@@ -15,16 +15,26 @@ export function activate(context: vscode.ExtensionContext) {
     }
     if (!fs.existsSync(macroModulePath)) {
       // Macro file not found
-      vscode.window.showErrorMessage(`Macro file '${macroModulePath}' not found.`);
+      vscode.window.showErrorMessage(`The macro file '${macroModulePath}' not found.`);
       return;
     }
 
     // Delete the cached macro module from NodeRequire cache
-    delete require.cache[require.resolve(macroModulePath)];
+    delete require.cache[macroModulePath];
 
     // Load the macro script module from file
-    const macroCommands: { [name: string]: { no: number; func: () => string | undefined } } = require(macroModulePath).macroCommands;
-
+    let macroModule;
+    try {
+      macroModule = require(macroModulePath);
+    } catch (e) {
+      vscode.window.showErrorMessage(`An error occurred while loading the macro file (${e}).`);
+      return;
+    }
+    const macroCommands: { [name: string]: { no: number; func: () => string | undefined } } = macroModule.macroCommands;
+    if (macroCommands === undefined) {
+      vscode.window.showErrorMessage('Invalid macro command definition in the macro file.');
+      return;
+    }
     // Get macro names in a user defined order
     var macroNames = Object.keys(macroCommands).sort((a, b) => macroCommands[a].no - macroCommands[b].no);
     // Select the macro name to run
@@ -47,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
       } catch (e) {
         // An uncaught exception occurred
-        vscode.window.showErrorMessage(`Uncaught exception occurred in macro '${selection}'(${e}).`);
+        vscode.window.showErrorMessage(`An uncaught exception occurred in the macro '${selection}'(${e}).`);
       }
     });
   });

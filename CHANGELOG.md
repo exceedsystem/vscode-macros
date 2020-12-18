@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.4
+
+* Add a new 'openMacroDirectory' command.
+* Tested the extension in the VSCode 1.31.1 and lowered the minimum version to 1.31.1.
+
 ## 1.0.3
 
 * Added error checks when loading macro file, Fixed some error messages.

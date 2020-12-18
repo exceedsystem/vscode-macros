@@ -1,18 +1,24 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
-  let disposable = vscode.commands.registerCommand('vscode-macros.run', () => {
-    // Load configuration of an extension
-    const configuration = vscode.workspace.getConfiguration('vscodemacros');
-    // Get the macro module file path from the configuration
-    const macroModulePath: string = configuration.macroFilePath;
-
-    if (macroModulePath.length === 0) {
-      // Macro path not set in configuration
-      vscode.window.showErrorMessage('The macro file is not set in the configuration.');
-      return;
+  // OpenMacroDirectoryCommand
+  const disOpenMacroDirectoryCommand = vscode.commands.registerCommand('vscode-macros.openMacroDirectory', () => {
+    const macroModulePath = getMacroModulePath();
+    if (macroModulePath.length > 0) {
+      const macroDirPath = path.dirname(macroModulePath);
+      const macroDirUri = vscode.Uri.file(macroDirPath);
+      // Open a macro directory with a new editor window
+      vscode.commands.executeCommand('vscode.openFolder', macroDirUri, true);
     }
+  });
+  context.subscriptions.push(disOpenMacroDirectoryCommand);
+
+  // RunMacroCommand
+  const disRunCommand = vscode.commands.registerCommand('vscode-macros.run', () => {
+    const macroModulePath = getMacroModulePath();
+
     if (!fs.existsSync(macroModulePath)) {
       // Macro file not found
       vscode.window.showErrorMessage(`The macro file '${macroModulePath}' not found.`);
@@ -62,7 +68,24 @@ export function activate(context: vscode.ExtensionContext) {
     });
   });
 
-  context.subscriptions.push(disposable);
+  context.subscriptions.push(disRunCommand);
 }
 
 export function deactivate() {}
+
+/**
+ * Get the macro module path from configuration
+ */
+function getMacroModulePath(): string {
+  // Load configuration of an extension
+  const configuration = vscode.workspace.getConfiguration('vscodemacros');
+  // Get the macro module file path from the configuration
+  const macroModulePath: string = configuration.macroFilePath;
+
+  if (macroModulePath.length === 0) {
+    // Macro path not set in configuration
+    vscode.window.showErrorMessage('The macro file is not set in the configuration.');
+    return '';
+  }
+  return macroModulePath;
+}

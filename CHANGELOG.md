@@ -1,5 +1,10 @@
 # Change Log
 
+## 1.0.5
+
+* Add a new `debug` command.
+* Add an extension icon.
+
 ## 1.0.4
 
 * Add a new 'openMacroDirectory' command.

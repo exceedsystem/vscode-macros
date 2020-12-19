@@ -3,6 +3,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
+  // DebugMacroCommand
+  const disDebugCommand = vscode.commands.registerCommand('vscode-macros.debug', () => {
+    // Launch a development extension host
+    vscode.debug.startDebugging(undefined, {
+      name: 'Debug a macro',
+      type: 'extensionHost',
+      request: 'launch',
+      args: ['--extensionDevelopmentPath=${cwd}'],
+    });
+  });
+  context.subscriptions.push(disDebugCommand);
+
   // OpenMacroDirectoryCommand
   const disOpenMacroDirectoryCommand = vscode.commands.registerCommand('vscode-macros.openMacroDirectory', () => {
     const macroModulePath = getMacroModulePath();

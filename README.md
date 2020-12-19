@@ -105,6 +105,10 @@ You can debug your macros on the `extension development host` on VSCode as below
 
    ![](https://user-images.githubusercontent.com/70489172/101270585-b3cf8380-37bd-11eb-8d0a-471c43fd7016.png)
 
+   When you are running an old version of VSCode, you can run the __Extension Development Host__ from the command palette as below.
+
+   ![image](https://user-images.githubusercontent.com/70489172/102692495-fd58ad80-4256-11eb-8c3d-cf19fd3bc945.png)
+
 4. Select the __Extension Development Host__ window and press the `{F1}` key to open the command palette, and then type 'run a macro' in the command palette.
 
    ![](https://user-images.githubusercontent.com/70489172/101270582-ae723900-37bd-11eb-8c46-41c787375cb5.png)

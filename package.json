@@ -3,7 +3,7 @@
 	"name": "vscode-macros",
 	"displayName": "VSCode Macros",
 	"description": "Add a simple JavaScript macro features to your VSCode",
-	"version": "1.0.5",
+	"version": "1.1.0",
 	"engines": {
 		"vscode": "^1.31.1"
 	},
@@ -19,6 +19,7 @@
 		"url": "https://github.com/exceedsystem/vscode-macros"
 	},
 	"activationEvents": [
+		"onCommand:vscode-macros.selectMacroFile",
 		"onCommand:vscode-macros.openMacroDirectory",
 		"onCommand:vscode-macros.run",
 		"onCommand:vscode-macros.debug"
@@ -26,6 +27,10 @@
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
+			{
+				"command": "vscode-macros.selectMacroFile",
+				"title": "Select a macro file"
+			},
 			{
 				"command": "vscode-macros.openMacroDirectory",
 				"title": "Open a macro directory"
@@ -46,6 +51,11 @@
 					"type": "string",
 					"default": "",
 					"description": "Full path to the macro file."
+				},
+				"vscodemacros.runMacroAfterMacroFileSelection": {
+					"type": "boolean",
+					"default": "true",
+					"description": "Run a macro after macro file selection"
 				}
 			}
 		}

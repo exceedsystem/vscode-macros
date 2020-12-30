@@ -141,18 +141,17 @@ async function getRunMacroAfterFileSelectionConf() {
  * @param macroDirPath Full path to the macro directory
  */
 async function selectMacroFile(macroDirPath: string) {
-  const macroFiles = fs
-    .readdirSync(macroDirPath, {
-      withFileTypes: true,
-    })
-    .filter((s) => s.isFile && path.extname(s.name) === '.js');
+  const macroFiles = fs.readdirSync(macroDirPath).filter((fileName) => {
+    const filePath = path.join(macroDirPath, fileName);
+    return fs.statSync(filePath).isFile() && path.extname(fileName) === '.js';
+  });
   if (!macroFiles) {
     await vscode.window.showErrorMessage('There are no macro files in the macro directory.');
     return;
   }
 
   // Select the macro file
-  const fileNames = macroFiles.map((dirent) => dirent.name).sort();
+  const fileNames = macroFiles.map((fileName) => fileName).sort();
   const selection = await vscode.window.showQuickPick(fileNames, {
     canPickMany: false,
     placeHolder: 'Select a macro file.',

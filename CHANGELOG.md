@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.1.1
+
+* fixed some minor code bugs.
+
 ## 1.1.0
 
 * Added the feature to select a macro file and then run it.

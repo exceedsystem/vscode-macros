@@ -88,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disDebugCommand);
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 /**
  * Get configuration settings of the extension
@@ -121,10 +121,10 @@ async function getMacroModulePathConf() {
  * Set the macro module path to the configuration
  * @param path Full path to the macro module file
  */
-async function setMacroModulePathConf(path: string) {
+async function setMacroModulePathConf(macroModulePath: string) {
   const cfg = getConfiguration();
   // Update global configuration
-  await cfg.update(CFG_MACRO_MODULE_PATH, path, vscode.ConfigurationTarget.Global);
+  await cfg.update(CFG_MACRO_MODULE_PATH, macroModulePath, vscode.ConfigurationTarget.Global);
 }
 
 /**
@@ -185,7 +185,7 @@ async function runMacroCommand(macroCommands: IMacroCommands, selection: string)
     const ret = await macroCommands[selection].func();
     if (ret === undefined) {
       // Successful
-      await vscode.window.setStatusBarMessage(`Macro '${selection}' completed.`, 5000);
+      vscode.window.setStatusBarMessage(`Macro '${selection}' completed.`, 5000);
       return;
     } else {
       // Failed

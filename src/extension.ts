@@ -5,6 +5,7 @@ import * as path from 'path';
 const CONFIG_NAME = 'vscodemacros';
 const CFG_MACRO_MODULE_PATH = 'macroFilePath';
 const CFG_RUN_MACRO_AFTER_FILE_SELECTION = 'runMacroAfterMacroFileSelection';
+const VSCODE_PORTABLE = process.env.VSCODE_PORTABLE;
 
 export function activate(context: vscode.ExtensionContext) {
   // SelectMacroFileCommand
@@ -109,22 +110,32 @@ async function getMacroModulePathConf() {
     await vscode.window.showErrorMessage('The macro file is not set in the configuration.');
     return;
   }
-  if (!fs.existsSync(macroModPath)) {
+  let processedPath = macroModPath;
+  if (VSCODE_PORTABLE && !path.isAbsolute(processedPath)) {
+    // If vscode is running as a portable version and the macro file path is a relative path, prepend a path to the data directory
+    processedPath = path.join(VSCODE_PORTABLE, macroModPath);
+  }
+  if (!fs.existsSync(processedPath)) {
     // Macro file not found
-    await vscode.window.showErrorMessage(`The macro file '${macroModPath}' not found.`);
+    await vscode.window.showErrorMessage(`The macro file '${processedPath}' not found.`);
     return;
   }
-  return macroModPath;
+  return processedPath;
 }
 
 /**
  * Set the macro module path to the configuration
- * @param path Full path to the macro module file
+ * @param macroModPath Path to the macro module file
  */
-async function setMacroModulePathConf(macroModulePath: string) {
+async function setMacroModulePathConf(macroModPath: string) {
   const cfg = getConfiguration();
+  let processedPath = macroModPath;
+  if (VSCODE_PORTABLE) {
+    // If vscode is running as a portable version, convert an absolute path to a relative path
+    processedPath = path.relative(VSCODE_PORTABLE, processedPath);
+  }
   // Update global configuration
-  await cfg.update(CFG_MACRO_MODULE_PATH, macroModulePath, vscode.ConfigurationTarget.Global);
+  await cfg.update(CFG_MACRO_MODULE_PATH, processedPath, vscode.ConfigurationTarget.Global);
 }
 
 /**

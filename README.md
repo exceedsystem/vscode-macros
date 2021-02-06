@@ -98,9 +98,13 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
 
    ![image](https://user-images.githubusercontent.com/70489172/101270579-a914ee80-37bd-11eb-86aa-279e60c884cf.png)
 
-5. Open the preference setting of the VSCode and enter `vscodemacros` in the search text box, and then enter the macro file name with the full path in the 'Macro File Path' text box.
+5. Open the preference setting of the VSCode and enter `vscodemacros` in the search text box, and then enter the macro file path in the 'Macro File Path' text box.
 
-   ![image](https://user-images.githubusercontent.com/70489172/101270580-ac0fdf00-37bd-11eb-9151-4a9a580da6c6.png)
+   ![image](https://user-images.githubusercontent.com/70489172/107116863-82f0f500-68b9-11eb-8c9f-4af0a7143084.png)
+
+   If you are using the portable version, you can also enter a relative path from a data directory.
+   ![image](https://user-images.githubusercontent.com/70489172/107117455-d9f8c900-68bd-11eb-8783-8e8c18c7221c.png)
+   ![image](https://user-images.githubusercontent.com/70489172/107117406-7ff80380-68bd-11eb-9a12-f6269fde6597.png)
 
 ### How to use?
 

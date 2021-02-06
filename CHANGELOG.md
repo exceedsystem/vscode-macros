@@ -1,8 +1,12 @@
 # Change Log
 
+## 1.1.2
+
+* Added support for the portable version.
+
 ## 1.1.1
 
-* fixed some minor code bugs.
+* Fixed some minor code bugs.
 
 ## 1.1.0
 

@@ -86,10 +86,10 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
    }
 
    /**
-    * BarMacro
+    * BarMacro(asynchronous)
     */
-   function barFunc() {
-      vscode.window.showInformationMessage('Hello VSCode Macros!');
+   async function barFunc() {
+      await vscode.window.showInformationMessage('Hello VSCode Macros!');
       // Returns nothing when successful.
    }
    ```
@@ -98,7 +98,7 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
 
    ![image](https://user-images.githubusercontent.com/70489172/101270579-a914ee80-37bd-11eb-86aa-279e60c884cf.png)
 
-5. Open the preference setting of the VSCode and enter `vscodemacros` in the search text box, and then enter the macro file path in the 'Macro File Path' text box.
+5. Open the preference setting of the VSCode and enter `vscode macros` in the search text box, and then enter the macro file path in the 'Macro File Path' text box.
 
    ![image](https://user-images.githubusercontent.com/70489172/107116863-82f0f500-68b9-11eb-8c9f-4af0a7143084.png)
 
@@ -106,13 +106,46 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
    ![image](https://user-images.githubusercontent.com/70489172/107117455-d9f8c900-68bd-11eb-8783-8e8c18c7221c.png)
    ![image](https://user-images.githubusercontent.com/70489172/107117406-7ff80380-68bd-11eb-9a12-f6269fde6597.png)
 
-### How to use?
+### How to assign your frequently used macros to user commands
+
+1. Open the preference setting of the VSCode and enter `vscode macros` in the search text box, and then click `{Edit in settings.json}` in the `User Macro Commands` fields.
+
+   ![image](https://user-images.githubusercontent.com/70489172/107235361-f3d60f80-6a67-11eb-9a38-7f897fd6e91e.png)
+
+2. Register the macro path and macro name in the json file as below. (Up to 5 commands)
+
+   ```json
+   "vscodemacros.userMacroCommands": [
+   {
+      "path": "C:\\Temp\\macros\\FooMacro.js",
+      "name": "FooMacro"
+   },
+   {
+      "path": "C:\\Temp\\macros\\BarMacro.js",
+      "name": "BarMacro"
+   },
+   {
+      "path": "",
+      "name": ""
+   },
+   {
+      "path": "",
+      "name": ""
+   },
+   {
+      "path": "",
+      "name": ""
+   },
+   ],
+   ```
+
+### How to use
 
 You can run your macro from the command palette.
 
 1. Press the `{F1}` key to open the command palette, and then type `run a macro` in the command palette and after press `{Enter}` key.
-
-   ![image](https://user-images.githubusercontent.com/70489172/101270582-ae723900-37bd-11eb-8c46-41c787375cb5.png)
+   
+   ![image](https://user-images.githubusercontent.com/70489172/107357599-a617e080-6b15-11eb-85a7-57cd6250229d.png)
 
 2. Select the macro name from the macro list.
 
@@ -120,9 +153,19 @@ You can run your macro from the command palette.
 
    If you want to change to another macro file, you can use the "select a macro file" command.
 
-   ![image](https://user-images.githubusercontent.com/70489172/103350331-f47f9b80-4ae2-11eb-8032-e4116207f1f3.png)
+   ![image](https://user-images.githubusercontent.com/70489172/107357776-d8c1d900-6b15-11eb-9235-e65304e77cb3.png)
 
-### How to debug my macros?
+You can assign your macros from `User Macro1` to `User Macro5`.
+
+1. Press the `{F1}` key to open the command palette, and then type `vscmacros` in the command palette.
+
+   ![image](https://user-images.githubusercontent.com/70489172/107356733-8207cf80-6b14-11eb-99a5-30a7d4a14a9c.png)
+
+2. Click the `{⚙}` icon of the user command which you want to assign a shortcut key.
+
+   ![image](https://user-images.githubusercontent.com/70489172/107506596-a1206300-6be1-11eb-9434-38f4b3e77c28.png)
+
+### How to debug my macros
 
 You can debug your macros on the `extension development host` on VSCode as below.
 
@@ -140,11 +183,11 @@ You can debug your macros on the `extension development host` on VSCode as below
 
    When you are running an old version of VSCode, you can run the __Extension Development Host__ from the command palette as below.
 
-   ![image](https://user-images.githubusercontent.com/70489172/102692495-fd58ad80-4256-11eb-8c3d-cf19fd3bc945.png)
+   ![image](https://user-images.githubusercontent.com/70489172/107511057-4dfdde80-6be8-11eb-8794-2e7e568087d9.png)
 
 4. Select the __Extension Development Host__ window and press the `{F1}` key to open the command palette, and then type 'run a macro' in the command palette.
 
-   ![image](https://user-images.githubusercontent.com/70489172/101270582-ae723900-37bd-11eb-8c46-41c787375cb5.png)
+   ![image](https://user-images.githubusercontent.com/70489172/107510939-227af400-6be8-11eb-9b4b-4c0fa277de5f.png)
 
 5. Select the macro name to debugging from the macro list.
 
@@ -153,3 +196,9 @@ You can debug your macros on the `extension development host` on VSCode as below
 6. When the program stops at the breakpoint, and you can debug it.
 
    ![image](https://user-images.githubusercontent.com/70489172/101270591-b92cce00-37bd-11eb-88d9-b40529ec409f.png)
+
+### Macro examples
+
+You can find some examples of vscode macros on the GitHub gist.
+
+[https://gist.github.com/exceedsystem](https://gist.github.com/exceedsystem)

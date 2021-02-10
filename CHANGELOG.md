@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.2.0
+
+* Added a user defined macro command feature.
+
 ## 1.1.2
 
 * Added support for the portable version.

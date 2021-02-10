@@ -3,7 +3,7 @@
 	"name": "vscode-macros",
 	"displayName": "VSCode Macros",
 	"description": "Add a simple JavaScript macro features to your VSCode",
-	"version": "1.1.2",
+	"version": "1.2.0",
 	"engines": {
 		"vscode": "^1.31.1"
 	},
@@ -18,30 +18,67 @@
 		"type": "git",
 		"url": "https://github.com/exceedsystem/vscode-macros"
 	},
+	"bugs": {
+		"url": "https://github.com/exceedsystem/vscode-macros/issues"
+	},
 	"activationEvents": [
 		"onCommand:vscode-macros.selectMacroFile",
 		"onCommand:vscode-macros.openMacroDirectory",
 		"onCommand:vscode-macros.run",
-		"onCommand:vscode-macros.debug"
+		"onCommand:vscode-macros.debug",
+		"onCommand:vscode-macros.user1",
+		"onCommand:vscode-macros.user2",
+		"onCommand:vscode-macros.user3",
+		"onCommand:vscode-macros.user4",
+		"onCommand:vscode-macros.user5"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
 				"command": "vscode-macros.selectMacroFile",
-				"title": "Select a macro file"
+				"title": "Select a macro file",
+				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.openMacroDirectory",
-				"title": "Open a macro directory"
+				"title": "Open a macro directory",
+				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.run",
-				"title": "Run a macro"
+				"title": "Run a macro",
+				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.debug",
-				"title": "Debug a macro"
+				"title": "Debug a macro",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user1",
+				"title": "User Macro1",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user2",
+				"title": "User Macro2",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user3",
+				"title": "User Macro3",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user4",
+				"title": "User Macro4",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user5",
+				"title": "User Macro5",
+				"category": "VSCMacros"
 			}
 		],
 		"configuration": {
@@ -50,12 +87,35 @@
 				"vscodemacros.macroFilePath": {
 					"type": "string",
 					"default": "",
-					"description": "Path to the macro file(Absolute path or relative path from a data directory)."
+					"description": "Path to the macro file. (Absolute path or relative path from a data directory.)"
 				},
 				"vscodemacros.runMacroAfterMacroFileSelection": {
 					"type": "boolean",
 					"default": "true",
 					"description": "Run a macro after macro file selection."
+				},
+				"vscodemacros.userMacroCommands": {
+					"type": "array",
+					"description": "Assign macros to user commands.",
+					"maxItems": 5,
+					"items": {
+						"type": "object",
+						"title": "Macro path and macro name.",
+						"required": [
+							"path",
+							"name"
+						],
+						"properties": {
+							"path": {
+								"type": "string",
+								"description": "Path to the macro file. (Absolute path or relative path from a data directory.)"
+							},
+							"name": {
+								"type": "string",
+								"description": "Name of the macro."
+							}
+						}
+					}
 				}
 			}
 		}

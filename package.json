@@ -3,16 +3,18 @@
 	"name": "vscode-macros",
 	"displayName": "VSCode Macros",
 	"description": "Add a simple JavaScript macro features to your VSCode",
-	"version": "1.2.0",
+	"version": "1.3.0",
+	"license": "MIT",
 	"engines": {
-		"vscode": "^1.31.1"
+		"vscode": "^1.41.1"
 	},
 	"categories": [
 		"Other"
 	],
 	"icon": "images/icon.png",
 	"keywords": [
-		"macro"
+		"macro",
+		"multi-root ready"
 	],
 	"repository": {
 		"type": "git",
@@ -30,7 +32,12 @@
 		"onCommand:vscode-macros.user2",
 		"onCommand:vscode-macros.user3",
 		"onCommand:vscode-macros.user4",
-		"onCommand:vscode-macros.user5"
+		"onCommand:vscode-macros.user5",
+		"onCommand:vscode-macros.user6",
+		"onCommand:vscode-macros.user7",
+		"onCommand:vscode-macros.user8",
+		"onCommand:vscode-macros.user9",
+		"onCommand:vscode-macros.user10"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -57,27 +64,52 @@
 			},
 			{
 				"command": "vscode-macros.user1",
-				"title": "User Macro1",
+				"title": "User Macro 01",
 				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.user2",
-				"title": "User Macro2",
+				"title": "User Macro 02",
 				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.user3",
-				"title": "User Macro3",
+				"title": "User Macro 03",
 				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.user4",
-				"title": "User Macro4",
+				"title": "User Macro 04",
 				"category": "VSCMacros"
 			},
 			{
 				"command": "vscode-macros.user5",
-				"title": "User Macro5",
+				"title": "User Macro 05",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user6",
+				"title": "User Macro 06",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user7",
+				"title": "User Macro 07",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user8",
+				"title": "User Macro 08",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user9",
+				"title": "User Macro 09",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.user10",
+				"title": "User Macro 10",
 				"category": "VSCMacros"
 			}
 		],
@@ -87,17 +119,20 @@
 				"vscodemacros.macroFilePath": {
 					"type": "string",
 					"default": "",
-					"description": "Path to the macro file. (Absolute path or relative path from a data directory.)"
+					"description": "Path to the macro file. You can use an absolute path or a relative path from a data directory or workspace. You can also use an environment variables, such as '{ENV_NAME}/path/to/macro.js'. In portable mode, use the '{VSCODE_PORTABLE}' environment variable instead of a relative path to the data directory.",
+					"scope": "resource"
 				},
 				"vscodemacros.runMacroAfterMacroFileSelection": {
 					"type": "boolean",
-					"default": "true",
-					"description": "Run a macro after macro file selection."
+					"default": true,
+					"description": "Run the macro after selecting the macro file.",
+					"scope": "resource"
 				},
 				"vscodemacros.userMacroCommands": {
 					"type": "array",
-					"description": "Assign macros to user commands.",
-					"maxItems": 5,
+					"description": "Up to 10 macro commands can be assigned as user commands. This is mainly used to use keyboard shortcuts for frequently used macros.",
+					"maxItems": 10,
+					"scope": "resource",
 					"items": {
 						"type": "object",
 						"title": "Macro path and macro name.",
@@ -108,7 +143,7 @@
 						"properties": {
 							"path": {
 								"type": "string",
-								"description": "Path to the macro file. (Absolute path or relative path from a data directory.)"
+								"description": "Path to the macro file. You can use an absolute path or a relative path from a data directory or workspace. You can also use an environment variables, such as '{ENV_NAME}/path/to/macro.js'. In portable mode, use the '{VSCODE_PORTABLE}' environment variable instead of a relative path to the data directory."
 							},
 							"name": {
 								"type": "string",
@@ -132,7 +167,7 @@
 		"@types/glob": "^7.1.3",
 		"@types/mocha": "^8.0.0",
 		"@types/node": "^12.11.7",
-		"@types/vscode": "^1.31.0",
+		"@types/vscode": "^1.41.0",
 		"@typescript-eslint/eslint-plugin": "^4.1.1",
 		"@typescript-eslint/parser": "^4.1.1",
 		"eslint": "^7.9.0",

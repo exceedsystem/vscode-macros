@@ -1,15 +1,16 @@
 # VSCode Macros
 
-## Add a simple JavaScript macro features to your VSCode
+## Add a scripting macro feature to your VSCode
 
-The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy.
+Improves work efficiency and productivity by automating inefficient text editing operations.
 
 ### Features
 
-* You can write your macro in javascript.
-* You can use the VSCode extension API in your macros. (But has restrictions according to the specification of the API.)
+* You can write your macro in JavaScript.
+* You can use the VSCode extension API in your macros.
+   (There are some limitations due to API specifications.)
 * You can use the Node.js modules in your macros.
-* You can run your macro from the command palette or shortcut keys. (If you assign shortcut keys to the commands.)
+* You can run your macros from the command pallette and shortcut keys.
 * You can manage your macros by units of files.
 * You can debug your macro on the debugger of the VSCode.
 
@@ -17,15 +18,15 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
 
 * Write your macro and run it instantly.
 
-   ![vscmacros_edit_and run](https://user-images.githubusercontent.com/70489172/103329811-e78e8800-4aa1-11eb-944e-42acbbc8f096.gif)
+  ![vscmacros_edit_and run](https://user-images.githubusercontent.com/70489172/103329811-e78e8800-4aa1-11eb-944e-42acbbc8f096.gif)
 
 * Switch your macro file and apply some macros in combination.
 
-   ![vscmacros_run_macro_combination](https://user-images.githubusercontent.com/70489172/103330487-08a4a800-4aa5-11eb-80e2-6c84f9364434.gif)
+  ![vscmacros_run_macro_combination](https://user-images.githubusercontent.com/70489172/103330487-08a4a800-4aa5-11eb-80e2-6c84f9364434.gif)
 
 * Debug your macro with VSCode debugger.
 
-   ![vscmacros_debug_demo](https://user-images.githubusercontent.com/70489172/103352309-3f9cad00-4ae9-11eb-94b8-bce7399b885f.gif)
+  ![vscmacros_debug_demo](https://user-images.githubusercontent.com/70489172/103352309-3f9cad00-4ae9-11eb-94b8-bce7399b885f.gif)
 
 ### How to setup the extension
 
@@ -94,25 +95,77 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
    }
    ```
 
+   If you would like to create a new macro quickly, you can use the [snippet features of VSCode](https://code.visualstudio.com/docs/editor/userdefinedsnippets#\_create-your-own-snippets) to create a snippet like the following.
+
+   ```json
+   {
+      "Create new VSCode macro": {
+         "prefix": "vscmacro",
+         "body": [
+            "const vscode = require('vscode');",
+            "",
+            "/**",
+            " * Macro configuration settings",
+            " * { [name: string]: {              ... Name of the macro",
+            " *    no: number,                   ... Order of the macro",
+            " *    func: ()=> string | undefined ... Name of the body of the macro function",
+            " *  }",
+            " * }",
+            " */",
+            "module.exports.macroCommands = {",
+            "  $1: {",
+            "    no: 1,",
+            "    func: $2,",
+            "  },",
+            "};",
+            "",
+            "/**",
+            " * Hello world",
+            " */",
+            "async function $2() {",
+            "  const editor = vscode.window.activeTextEditor;",
+            "  if (!editor) {",
+            "    // Return an error message if necessary.",
+            "    return 'Active text editor not found.';",
+            "  }",
+            "  const document = editor.document;",
+            "  const selection = editor.selection;",
+            "  const text = document.getText(selection);",
+            "",
+            "  editor.edit((editBuilder) => {",
+            "    editBuilder.replace(selection, `Hello world! \\${text}`);",
+            "  });",
+            "}"
+         ],
+         "description": "VSCode Macros Template"
+      }
+   }
+   ```
+
 4. Give an arbitrary file name(\*.js) and save it in the macro folder.
 
    ![image](https://user-images.githubusercontent.com/70489172/101270579-a914ee80-37bd-11eb-86aa-279e60c884cf.png)
 
 5. Open the preference setting of the VSCode and enter `vscode macros` in the search text box, and then enter the macro file path in the 'Macro File Path' text box.
 
-   ![image](https://user-images.githubusercontent.com/70489172/107116863-82f0f500-68b9-11eb-8c9f-4af0a7143084.png)
+   > __NOTE:__ Version 1.3.0 and above support multi-root, workspace and workspace folders.
 
-   If you are using the portable version, you can also enter a relative path from a data directory.
-   ![image](https://user-images.githubusercontent.com/70489172/107117455-d9f8c900-68bd-11eb-8783-8e8c18c7221c.png)
-   ![image](https://user-images.githubusercontent.com/70489172/107117406-7ff80380-68bd-11eb-9a12-f6269fde6597.png)
+   ![image](https://user-images.githubusercontent.com/70489172/142166332-28c15ba5-8cdf-401f-aa1e-0ddb5c78c36a.png)
+
+   * You can use an environment variables in macro file path, such as `{ENV_NAME}/path/to/macro.js`.
+   * If you are using vscode portable mode version 1.3.0 and later, use the `{VSCODE_PORTABLE}` environment variable.
+
+   > __NOTE:__ When using this extension in portable mode, set the relative path to the data directory up to version 1.2.0, but in version 1.3.0 and later, uses the environment variable instead of the relative path.
 
 ### How to assign your frequently used macros to user commands
 
 1. Open the preference setting of the VSCode and enter `vscode macros` in the search text box, and then click `{Edit in settings.json}` in the `User Macro Commands` fields.
 
-   ![image](https://user-images.githubusercontent.com/70489172/107235361-f3d60f80-6a67-11eb-9a38-7f897fd6e91e.png)
+   > __NOTE:__ Version 1.3.0 and above support multi-root, workspace and workspace folders.
 
-2. Register the macro path and macro name in the json file as below. (Up to 5 commands)
+   ![image](https://user-images.githubusercontent.com/70489172/142166726-ecc22c4e-68ac-4c71-948c-d001ae638740.png)
+
+2. Register the macro path and macro name in the json file as below. (Up to 10 commands)
 
    ```json
    "vscodemacros.userMacroCommands": [
@@ -144,26 +197,26 @@ The 'vscode-macros' makes creating, using, and debugging VSCode macros very easy
 You can run your macro from the command palette.
 
 1. Press the `{F1}` key to open the command palette, and then type `run a macro` in the command palette and after press `{Enter}` key.
-   
+
    ![image](https://user-images.githubusercontent.com/70489172/107357599-a617e080-6b15-11eb-85a7-57cd6250229d.png)
 
 2. Select the macro name from the macro list.
 
    ![image](https://user-images.githubusercontent.com/70489172/101270590-b631dd80-37bd-11eb-8180-7995c13efbcd.png)
 
-   If you want to change to another macro file, you can use the "select a macro file" command.
+   If you would like to change to another macro file, you can use the "select a macro file" command.
 
    ![image](https://user-images.githubusercontent.com/70489172/107357776-d8c1d900-6b15-11eb-9235-e65304e77cb3.png)
 
-You can assign your macros from `User Macro1` to `User Macro5`.
+You can assign your macros from `User Macro 01` to `User Macro 10`.
 
 1. Press the `{F1}` key to open the command palette, and then type `vscmacros` in the command palette.
 
-   ![image](https://user-images.githubusercontent.com/70489172/107356733-8207cf80-6b14-11eb-99a5-30a7d4a14a9c.png)
+   ![image](https://user-images.githubusercontent.com/70489172/142145560-c3e6fc93-89da-4780-b075-242acc63ff7a.png)
 
-2. Click the `{⚙}` icon of the user command which you want to assign a shortcut key.
+2. Click the `{⚙}` icon of the user command which you would like to assign a shortcut key.
 
-   ![image](https://user-images.githubusercontent.com/70489172/107506596-a1206300-6be1-11eb-9434-38f4b3e77c28.png)
+   ![image](https://user-images.githubusercontent.com/70489172/142145840-f43d8dc9-719f-4ba0-a2b3-3ca95d6327dc.png)
 
 ### How to debug my macros
 
@@ -201,4 +254,4 @@ You can debug your macros on the `extension development host` on VSCode as below
 
 You can find some examples of vscode macros on the GitHub gist.
 
-[https://gist.github.com/exceedsystem](https://gist.github.com/exceedsystem)
+<https://gist.github.com/exceedsystem>

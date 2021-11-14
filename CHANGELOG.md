@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.3.0
+
+* Added support for multi-root, workspace and workspace-folders configuration.
+* Added support for using environment variables in the macro module path.
+* Increase the maximum number of user macro commands to 10.
+
 ## 1.2.0
 
 * Added a user defined macro command feature.

@@ -1,62 +1,80 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ConfigManager, ConfigInfo } from './configManager';
 
-const CONFIG_NAME = 'vscodemacros';
 const CFG_MACRO_MODULE_PATH = 'macroFilePath';
 const CFG_RUN_MACRO_AFTER_FILE_SELECTION = 'runMacroAfterMacroFileSelection';
-const VSCODE_PORTABLE = process.env.VSCODE_PORTABLE;
+const CFG_USER_MACRO_COMMANDS = 'userMacroCommands';
 
+/**
+ * Activate 
+ */
 export function activate(context: vscode.ExtensionContext) {
-  // SelectMacroFileCommand
+
+  /**
+   * SelectMacroFile Command
+   */
   const disSelectMacroFileCommand = vscode.commands.registerCommand('vscode-macros.selectMacroFile', async () => {
-    const macroModPath = await getMacroModulePathConf();
-    if (!macroModPath) return;
+    const macroModDirPathInfo = await getMacroModuleDirectoryPathInfo();
+    if (!macroModDirPathInfo) return;
 
-    const macroDirPath = path.dirname(macroModPath);
-    const selection = await selectMacroFile(macroDirPath);
-    if (!selection) return;
+    const selectedMacroModule = await selectMacroModule(macroModDirPathInfo.expanded);
+    if (!selectedMacroModule) return;
 
-    // Delete the current cached macro module from a NodeRequire cache
-    delete require.cache[macroModPath];
-    // Update the macro module path to the selected one
-    await setMacroModulePathConf(path.join(macroDirPath, selection));
+    // Update a macro module path to the selected one
+    await ConfigManager.updateConfigValue(CFG_MACRO_MODULE_PATH, path.join(macroModDirPathInfo.original, selectedMacroModule));
 
-    // Run the macro according to the configuration setting
-    const runMacroFlag = await getRunMacroAfterFileSelectionConf();
+    // Run a macro according to the configuration setting
+    const runMacroFlag = await getRunMacroAfterFileSelectionFlag();
     if (runMacroFlag) {
       await vscode.commands.executeCommand('vscode-macros.run');
     }
   });
   context.subscriptions.push(disSelectMacroFileCommand);
 
-  // OpenMacroDirectoryCommand
+  /**
+   * OpenMacroDirectory Command
+   */
   const disOpenMacroDirectoryCommand = vscode.commands.registerCommand('vscode-macros.openMacroDirectory', async () => {
-    const macroModPath = await getMacroModulePathConf();
-    if (!macroModPath) return;
+    const macroModDirPathInfo = await getMacroModuleDirectoryPathInfo();
+    if (!macroModDirPathInfo) return;
 
-    const macroDirPath = path.dirname(macroModPath);
-    const macroDirUri = vscode.Uri.file(macroDirPath);
     // Open a macro directory in a new editor window
+    const macroDirUri = vscode.Uri.file(macroModDirPathInfo.expanded);
     await vscode.commands.executeCommand('vscode.openFolder', macroDirUri, true);
   });
   context.subscriptions.push(disOpenMacroDirectoryCommand);
 
-  // RunMacroCommand
+  /**
+   * RunMacro Command
+   */
   const disRunCommand = vscode.commands.registerCommand('vscode-macros.run', async () => {
-    const macroModPath = await getMacroModulePathConf();
+    const configInfo = ConfigManager.getConfigInfo();
+    if (!configInfo) return;
+
+    const macroModPath = await getMacroModulePathFromConfig(configInfo);
     if (!macroModPath) return;
 
-    // Load macro and run command
-    await loadAndRunMacro(macroModPath, async (macroCommands) => {
+    const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', macroModPath);
+    if (!fs.existsSync(macroModPathInfo.expanded)) {
+      await vscode.window.showErrorMessage(`The macro file '${macroModPathInfo.expanded}' not found.`);
+      return;
+    }
+
+    // Load a macro module and run a command
+    await loadAndRunMacro(macroModPathInfo.expanded, async (macroCommands) => {
       const commandName = await selectMacroCommand(macroCommands);
       if (!commandName) return;
+
       await runMacroCommand(macroCommands, commandName);
     });
   });
   context.subscriptions.push(disRunCommand);
 
-  // DebugMacroCommand
+  /**
+   * DebugMacro Command
+   */
   const disDebugCommand = vscode.commands.registerCommand('vscode-macros.debug', async () => {
     // Launch a development extension host
     await vscode.debug.startDebugging(undefined, {
@@ -97,155 +115,195 @@ export function activate(context: vscode.ExtensionContext) {
     await runUserMacro(4);
   });
   context.subscriptions.push(disUserCommand5);
+
+  // UserMacro6
+  const disUserCommand6 = vscode.commands.registerCommand('vscode-macros.user6', async () => {
+    await runUserMacro(5);
+  });
+  context.subscriptions.push(disUserCommand6);
+
+  // UserMacro7
+  const disUserCommand7 = vscode.commands.registerCommand('vscode-macros.user7', async () => {
+    await runUserMacro(6);
+  });
+  context.subscriptions.push(disUserCommand7);
+
+  // UserMacro8
+  const disUserCommand8 = vscode.commands.registerCommand('vscode-macros.user8', async () => {
+    await runUserMacro(7);
+  });
+  context.subscriptions.push(disUserCommand8);
+
+  // UserMacro9
+  const disUserCommand9 = vscode.commands.registerCommand('vscode-macros.user9', async () => {
+    await runUserMacro(8);
+  });
+  context.subscriptions.push(disUserCommand9);
+
+  // UserMacro10
+  const disUserCommand10 = vscode.commands.registerCommand('vscode-macros.user10', async () => {
+    await runUserMacro(9);
+  });
+  context.subscriptions.push(disUserCommand10);
 }
 
+/**
+ * Deactivate
+ */
 export function deactivate() { }
 
 /**
- * Get configuration settings of the extension
+ * Get the path of the macro module from configuration
+ * @param configInfo The source of the configuration
+ * @returns A macro module path
  */
-function getConfiguration(): vscode.WorkspaceConfiguration {
-  return vscode.workspace.getConfiguration(CONFIG_NAME);
-}
-
-/**
- * Get the macro module path from the macro configuration
- * @returns Full path to the macro module file
- */
-async function getMacroModulePathConf() {
-  const cfg = getConfiguration();
-  const macroFilePath = cfg.get<string>(CFG_MACRO_MODULE_PATH);
-  if (!macroFilePath) {
-    // Path not set in the configuration
+async function getMacroModulePathFromConfig(configInfo: ConfigInfo) {
+  const macroModPath = ConfigManager.getConfigValue<string>(configInfo, CFG_MACRO_MODULE_PATH);
+  if (!macroModPath) {
     await vscode.window.showErrorMessage('The macro file is not set in the configuration.');
     return;
   }
-  const macroModPath = GetMacroModPath(macroFilePath);
-  if (!fs.existsSync(macroModPath)) {
-    // Macro file not found
-    await vscode.window.showErrorMessage(`The macro file '${macroModPath}' not found.`);
-    return;
-  }
+
   return macroModPath;
 }
 
 /**
- * Set the macro module path to the configuration
- * @param macroModPath Path to the macro module file
+ * Get the path of the macro module directory from configuration
+ * @returns A macro module directory path
  */
-async function setMacroModulePathConf(macroModPath: string) {
-  const cfg = getConfiguration();
-  let processedPath = macroModPath;
-  if (VSCODE_PORTABLE) {
-    // If vscode is running as a portable mode, convert an absolute path to a relative path
-    processedPath = path.relative(VSCODE_PORTABLE, processedPath);
-  }
-  // Update global configuration
-  await cfg.update(CFG_MACRO_MODULE_PATH, processedPath, vscode.ConfigurationTarget.Global);
-}
+async function getMacroModuleDirectoryPathInfo() {
+  const configInfo = ConfigManager.getConfigInfo();
+  if (!configInfo) return;
 
-/**
- * Get a setting from the configuration that to run a macro after the file selection
- */
-async function getRunMacroAfterFileSelectionConf() {
-  const cfg = getConfiguration();
-  const runMacroFlag = cfg.get<boolean>(CFG_RUN_MACRO_AFTER_FILE_SELECTION);
-  return runMacroFlag ? true : false;
-}
+  const macroModPath = await getMacroModulePathFromConfig(configInfo);
+  if (!macroModPath) return;
 
-/**
- * Select the macro file from the macro directory
- * @param macroDirPath Full path to the macro directory
- */
-async function selectMacroFile(macroDirPath: string) {
-  const macroFiles = fs.readdirSync(macroDirPath).filter((fileName) => {
-    const filePath = path.join(macroDirPath, fileName);
-    return fs.statSync(filePath).isFile() && path.extname(fileName) === '.js';
-  });
-  if (!macroFiles) {
-    await vscode.window.showErrorMessage('There are no macro files in the macro directory.');
+  const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', macroModPath);
+  const macroModDirPath = path.dirname(macroModPathInfo.expanded);
+  if (macroModDirPath === '.' || !fs.existsSync(macroModDirPath)) {
+    await vscode.window.showErrorMessage(`The macro directory '${macroModDirPath}' not found.`);
     return;
   }
 
-  // Select the macro file
-  const fileNames = macroFiles.map((fileName) => fileName).sort();
-  const selection = await vscode.window.showQuickPick(fileNames, {
+  return <PathInfo>{
+    original: path.dirname(macroModPath),
+    expanded: macroModDirPath
+  };
+}
+
+/**
+ * Get the setting of whether or not to run macro after selecting a macro module
+ * @returns 'true' if run macro after selecting a macro module
+ */
+async function getRunMacroAfterFileSelectionFlag() {
+  const configInfo = ConfigManager.getConfigInfo();
+  if (!configInfo) return;
+
+  const runMacroFlag = ConfigManager.getConfigValue<boolean>(configInfo, CFG_RUN_MACRO_AFTER_FILE_SELECTION);
+
+  return runMacroFlag ?? false;
+}
+
+/**
+ * Select a macro module from the macro directory
+ * @param macroDirPath Full path to the directory where the macros are stored
+ * @returns A name of the macro module
+ */
+async function selectMacroModule(macroDirPath: string) {
+  const macroModules = fs.readdirSync(macroDirPath).filter((fileName) => {
+    const filePath = path.join(macroDirPath, fileName);
+    return fs.statSync(filePath).isFile() && path.extname(fileName) === '.js';
+  });
+
+  if (!macroModules || macroModules.length === 0) {
+    await vscode.window.showErrorMessage(`There are no macro files in the macro directory '${macroDirPath}'.`);
+    return;
+  }
+
+  // Select the macro module
+  const sortedMacroModules = macroModules.map((fileName) => fileName).sort();
+  const selectedMacroModule = await vscode.window.showQuickPick(sortedMacroModules, {
     canPickMany: false,
     placeHolder: 'Select a macro file.',
   });
-  return selection;
+
+  return selectedMacroModule;
 }
 
 /**
- * Select the macro command and run it
+ * Select a macro command and run it
  * @param macroCommands The MacroCommands object
  */
-async function selectMacroCommand(macroCommands: IMacroCommands) {
+async function selectMacroCommand(macroCommands: MacroCommands) {
   // Get macro names in a user defined order
   const macroNames = Object.keys(macroCommands).sort((a, b) => macroCommands[a].no - macroCommands[b].no);
-  // Select the macro name to run
-  const selection = await vscode.window.showQuickPick(macroNames, {
+  // Select a macro name to run
+  const selectedCommand = await vscode.window.showQuickPick(macroNames, {
     canPickMany: false,
     placeHolder: 'Select a command to run.',
   });
-  return selection;
+
+  return selectedCommand;
 }
 
 /**
- * Load macro and run command
- * @param macroModPath Path to the macro module file
- * @param runCommandCallback Callback to run a macro
+ * Load the macro module, and then run the macro command
+ * @param macroModPath Full path to the macro module file
+ * @param runCommandCallback Callback for the macro run
  */
-async function loadAndRunMacro(macroModPath: string, runCommandCallback: (macroCommands: IMacroCommands) => Promise<void>) {
+async function loadAndRunMacro(macroModPath: string, runCommandCallback: (macroCommands: MacroCommands) => Promise<void>) {
   if (!macroModPath.length) {
     await vscode.window.showErrorMessage('The macro file is not set.');
     return;
   }
+
   if (!fs.existsSync(macroModPath)) {
     await vscode.window.showErrorMessage(`The macro file '${macroModPath}' does not exist.`);
     return;
   }
 
-  // Load the macro script module from file
+  let loadedMacroModulePath = macroModPath;
   try {
-    // Before execute a command, remove the cached macro module from a NodeRequire cache
-    delete require.cache[macroModPath];
-    // Load macro module to NodeRequire
+    // Load the macro module into NodeRequire
+    delete require.cache[loadedMacroModulePath];
     const macroMod = require(macroModPath);
-    // Check commands
+    loadedMacroModulePath = macroModPath;
+
+    // Verify commands
     if (!isMacroCommands(macroMod.macroCommands)) {
       await vscode.window.showErrorMessage('Invalid macro command definition in the macro file.');
       return;
     }
+
     // return macroMod.macroCommands as IMacroCommands;
     await runCommandCallback(macroMod.macroCommands);
   } catch (e) {
     await vscode.window.showErrorMessage(`An error occurred while loading the macro file (${e}).`);
-    return;
   } finally {
-    // After execute a command, remove the cached macro module from a NodeRequire cache.
-    delete require.cache[macroModPath];
+    // Remove the cached macro module from the NodeRequire cache when the command is completed.
+    delete require.cache[loadedMacroModulePath];
   }
 }
 
 /**
- * Run the user macro command
- * @param userMacroIndex User macro index(0 to 4)
+ * Run a user macro command
+ * @param index Macro index number(0 to 9)
  */
-async function runUserMacro(userMacroIndex: number) {
-  const cfg = getConfiguration();
-  const userMacros = cfg.get<IUserMacro[]>('userMacroCommands');
-  if (!userMacros || userMacroIndex >= userMacros.length) {
-    await vscode.window.showErrorMessage(`The 'User Macro${userMacroIndex + 1}' is not set in the 'setting.json'.`);
+async function runUserMacro(index: number) {
+  const configInfo = ConfigManager.getConfigInfo();
+  if (!configInfo) return;
+
+  // Get user macro command information from the configuration
+  const userMacros = ConfigManager.getConfigValue<UserMacroInfo[]>(configInfo, CFG_USER_MACRO_COMMANDS);
+  if (!userMacros || index >= userMacros.length) {
+    await vscode.window.showErrorMessage(`The 'User Macro ${index + 1}' is not set in the 'setting.json'.`);
     return;
   }
 
-  // Load user macro
-  const userMacro = userMacros[userMacroIndex];
-
-  // Load macro and run command
-  const macroModPath = GetMacroModPath(userMacro.path);
-  await loadAndRunMacro(macroModPath, async (macroCommands) => {
+  // Load a macro and run command
+  const userMacro = userMacros[index];
+  const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', userMacro.path);
+  await loadAndRunMacro(macroModPathInfo.expanded, async (macroCommands) => {
     await runMacroCommand(macroCommands, userMacro.name);
   });
 }
@@ -253,9 +311,9 @@ async function runUserMacro(userMacroIndex: number) {
 /**
  * Run the macro command
  * @param macroCommands The MacroCommands object
- * @param macroName The macro name to run
+ * @param macroName Name of the macro command to run
  */
-async function runMacroCommand(macroCommands: IMacroCommands, macroName: string) {
+async function runMacroCommand(macroCommands: MacroCommands, macroName: string) {
   try {
     if (!macroName.length) {
       vscode.window.showErrorMessage(`The macro command name is empty.`);
@@ -284,11 +342,11 @@ async function runMacroCommand(macroCommands: IMacroCommands, macroName: string)
 }
 
 /**
- *  Check if the object is a macro command object
+ *  Verify if the object is a macro command object
  * @param arg Subject to be inspected
  * @returns If arg is the macro command, return true
  */
-function isMacroCommands(arg: unknown): arg is IMacroCommands {
+function isMacroCommands(arg: unknown): arg is MacroCommands {
   if (typeof arg !== 'object' || arg === null) {
     return false;
   }
@@ -296,7 +354,7 @@ function isMacroCommands(arg: unknown): arg is IMacroCommands {
     if (command.length !== 2 || typeof command[0] !== 'string' || typeof command[1] !== 'object') {
       return false;
     }
-    if (typeof (command[1] as IMacroCommand).no !== 'number' || typeof (command[1] as IMacroCommand).func !== 'function') {
+    if (typeof (command[1] as MacroCommand).no !== 'number' || typeof (command[1] as MacroCommand).func !== 'function') {
       return false;
     }
   }
@@ -304,37 +362,63 @@ function isMacroCommands(arg: unknown): arg is IMacroCommands {
 }
 
 /**
- * Get the path of the macro module considering the portable mode
- * @param orgMacroModPath original macro module path
+ * Get a macro module path information
+ * @param workspacePath Full path to the workspace. (Workspace/WorkspaceFolder)
+ * @param macroModulePath Path to the macro module 
+ * @returns Path information of a macro module
  */
-function GetMacroModPath(orgMacroModPath: string): string {
-  let macroModPath = orgMacroModPath;
-  if (VSCODE_PORTABLE && !path.isAbsolute(macroModPath)) {
-    // If vscode is running as a portable mode and the macro file path is a relative path, prepend a path to the data directory
-    macroModPath = path.join(VSCODE_PORTABLE, orgMacroModPath);
-  }
-  return macroModPath;
+function makeMacroModulePathInfo(workspacePath: string, macroModulePath: string): PathInfo {
+  // Expand environment variables
+  const expandedChildPath = ExpandEnvVars(macroModulePath);
+
+  // If path is absolute then return
+  if (path.isAbsolute(expandedChildPath)) return <PathInfo>{
+    original: macroModulePath,
+    expanded: expandedChildPath
+  };
+
+  return <PathInfo>{
+    original: path.join(workspacePath, macroModulePath),
+    expanded: path.join(workspacePath, expandedChildPath)
+  };
+}
+
+/**
+ * Expand environment variables in a string
+ * @param text A string containing environment variables
+ * @returns String after environment variables expansion
+ */
+function ExpandEnvVars(text: string): string {
+  return text.replace(/{([^{}]+)}/g, (m, p1) => process.env[p1] ?? '');
 }
 
 /**
  * Macro commands
  */
-interface IMacroCommands {
-  [name: string]: IMacroCommand;
+interface MacroCommands {
+  [name: string]: MacroCommand;
 }
 
 /**
  * Macro command
  */
-interface IMacroCommand {
+interface MacroCommand {
   no: number;
   func: () => string | undefined;
 }
 
 /**
- * User macro
+ * User macro information
  */
-interface IUserMacro {
-  path: string,
-  name: string
+interface UserMacroInfo {
+  path: string;
+  name: string;
+}
+
+/**
+ * Path information
+ */
+interface PathInfo {
+  original: string;
+  expanded: string;
 }

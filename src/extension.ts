@@ -8,10 +8,9 @@ const CFG_RUN_MACRO_AFTER_FILE_SELECTION = 'runMacroAfterMacroFileSelection';
 const CFG_USER_MACRO_COMMANDS = 'userMacroCommands';
 
 /**
- * Activate 
+ * Activate
  */
 export function activate(context: vscode.ExtensionContext) {
-
   /**
    * SelectMacroFile Command
    */
@@ -86,71 +85,26 @@ export function activate(context: vscode.ExtensionContext) {
   });
   context.subscriptions.push(disDebugCommand);
 
-  // UserMacro1
-  const disUserCommand1 = vscode.commands.registerCommand('vscode-macros.user1', async () => {
-    await runUserMacro(0);
-  });
-  context.subscriptions.push(disUserCommand1);
-
-  // UserMacro2
-  const disUserCommand2 = vscode.commands.registerCommand('vscode-macros.user2', async () => {
-    await runUserMacro(1);
-  });
-  context.subscriptions.push(disUserCommand2);
-
-  // UserMacro3
-  const disUserCommand3 = vscode.commands.registerCommand('vscode-macros.user3', async () => {
-    await runUserMacro(2);
-  });
-  context.subscriptions.push(disUserCommand3);
-
-  // UserMacro4
-  const disUserCommand4 = vscode.commands.registerCommand('vscode-macros.user4', async () => {
-    await runUserMacro(3);
-  });
-  context.subscriptions.push(disUserCommand4);
-
-  // UserMacro5
-  const disUserCommand5 = vscode.commands.registerCommand('vscode-macros.user5', async () => {
-    await runUserMacro(4);
-  });
-  context.subscriptions.push(disUserCommand5);
-
-  // UserMacro6
-  const disUserCommand6 = vscode.commands.registerCommand('vscode-macros.user6', async () => {
-    await runUserMacro(5);
-  });
-  context.subscriptions.push(disUserCommand6);
-
-  // UserMacro7
-  const disUserCommand7 = vscode.commands.registerCommand('vscode-macros.user7', async () => {
-    await runUserMacro(6);
-  });
-  context.subscriptions.push(disUserCommand7);
-
-  // UserMacro8
-  const disUserCommand8 = vscode.commands.registerCommand('vscode-macros.user8', async () => {
-    await runUserMacro(7);
-  });
-  context.subscriptions.push(disUserCommand8);
-
-  // UserMacro9
-  const disUserCommand9 = vscode.commands.registerCommand('vscode-macros.user9', async () => {
-    await runUserMacro(8);
-  });
-  context.subscriptions.push(disUserCommand9);
-
-  // UserMacro10
-  const disUserCommand10 = vscode.commands.registerCommand('vscode-macros.user10', async () => {
-    await runUserMacro(9);
-  });
-  context.subscriptions.push(disUserCommand10);
+  /**
+   * UserMacro Commands(1 to 10)
+   */
+  const disUserCommands = (() => {
+    const disCmds: vscode.Disposable[] = [];
+    for (let i = 0; i < 10; ++i) {
+      const disCmd = vscode.commands.registerCommand(`vscode-macros.user${i + 1}`, async () => {
+        await runUserMacro(i);
+      });
+      disCmds.push(disCmd);
+      context.subscriptions.push(disCmd);
+    }
+    return disCmds;
+  })();
 }
 
 /**
  * Deactivate
  */
-export function deactivate() { }
+export function deactivate() {}
 
 /**
  * Get the path of the macro module from configuration
@@ -187,7 +141,7 @@ async function getMacroModuleDirectoryPathInfo() {
 
   return <PathInfo>{
     original: path.dirname(macroModPath),
-    expanded: macroModDirPath
+    expanded: macroModDirPath,
   };
 }
 
@@ -364,7 +318,7 @@ function isMacroCommands(arg: unknown): arg is MacroCommands {
 /**
  * Get a macro module path information
  * @param workspacePath Full path to the workspace. (Workspace/WorkspaceFolder)
- * @param macroModulePath Path to the macro module 
+ * @param macroModulePath Path to the macro module
  * @returns Path information of a macro module
  */
 function makeMacroModulePathInfo(workspacePath: string, macroModulePath: string): PathInfo {
@@ -372,14 +326,15 @@ function makeMacroModulePathInfo(workspacePath: string, macroModulePath: string)
   const expandedChildPath = ExpandEnvVars(macroModulePath);
 
   // If path is absolute then return
-  if (path.isAbsolute(expandedChildPath)) return <PathInfo>{
-    original: macroModulePath,
-    expanded: expandedChildPath
-  };
+  if (path.isAbsolute(expandedChildPath))
+    return <PathInfo>{
+      original: macroModulePath,
+      expanded: expandedChildPath,
+    };
 
   return <PathInfo>{
     original: path.join(workspacePath, macroModulePath),
-    expanded: path.join(workspacePath, expandedChildPath)
+    expanded: path.join(workspacePath, expandedChildPath),
   };
 }
 

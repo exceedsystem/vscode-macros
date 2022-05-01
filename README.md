@@ -218,6 +218,13 @@ You can assign your macros from `User Macro 01` to `User Macro 10`.
 
    ![image](https://user-images.githubusercontent.com/70489172/142145840-f43d8dc9-719f-4ba0-a2b3-3ca95d6327dc.png)
 
+* You can also run a `User Macro` from the `Run a User Macro` command.
+(This function would be helpful when you forget the settings of user macros.)
+
+   ![image](https://user-images.githubusercontent.com/70489172/166139961-d15f362f-95f7-4a38-808b-b869d3d273cf.png)
+
+   > __NOTE:__ Version 1.4.0 and above.
+
 ### How to debug my macros
 
 You can debug your macros on the `extension development host` on VSCode as below.

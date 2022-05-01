@@ -3,7 +3,7 @@
 	"name": "vscode-macros",
 	"displayName": "VSCode Macros",
 	"description": "Add a simple JavaScript macro features to your VSCode",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"license": "MIT",
 	"engines": {
 		"vscode": "^1.41.1"
@@ -37,7 +37,8 @@
 		"onCommand:vscode-macros.user7",
 		"onCommand:vscode-macros.user8",
 		"onCommand:vscode-macros.user9",
-		"onCommand:vscode-macros.user10"
+		"onCommand:vscode-macros.user10",
+		"onCommand:vscode-macros.runUserMacro"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -110,6 +111,11 @@
 			{
 				"command": "vscode-macros.user10",
 				"title": "User Macro 10",
+				"category": "VSCMacros"
+			},
+			{
+				"command": "vscode-macros.runUserMacro",
+				"title": "Run a User Macro",
 				"category": "VSCMacros"
 			}
 		],

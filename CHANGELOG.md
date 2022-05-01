@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.4.0
+
+* Added a new command to run registerd user macros.
+* Some code improvement.
+* Changed app icon.
+
 ## 1.3.0
 
 * Added support for multi-root, workspace and workspace-folders configuration.

@@ -6,6 +6,10 @@ import { ConfigManager, ConfigInfo } from './configManager';
 const CFG_MACRO_MODULE_PATH = 'macroFilePath';
 const CFG_RUN_MACRO_AFTER_FILE_SELECTION = 'runMacroAfterMacroFileSelection';
 const CFG_USER_MACRO_COMMANDS = 'userMacroCommands';
+const LABEL_OPEN_SETTINGS = 'Open settings';
+const CMD_PREFERENCE_OPEN_SETTINGS = 'workbench.action.openSettings';
+const VSCODEMACROS_SETTINGS = '@ext:EXCEEDSYSTEM.vscode-macros';
+const USER_MACRO_NUMBER_DIGITS = 2;
 
 /**
  * Activate
@@ -99,12 +103,55 @@ export function activate(context: vscode.ExtensionContext) {
     }
     return disCmds;
   })();
+
+  /**
+   * ShowMacroList Command
+   */
+  const disShowMacroList = vscode.commands.registerCommand('vscode-macros.runUserMacro', async () => {
+    const configInfo = ConfigManager.getConfigInfo();
+    if (!configInfo) return;
+
+    const userMacros = ConfigManager.getConfigValue<UserMacroInfo[]>(configInfo, CFG_USER_MACRO_COMMANDS);
+    if (!userMacros) return;
+
+    if (userMacros.length === 0) {
+      const selectedItem = await vscode.window.showErrorMessage('User Macro not set in the configuration.', LABEL_OPEN_SETTINGS);
+      if (selectedItem === LABEL_OPEN_SETTINGS)
+        await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
+      return;
+    }
+
+    interface UserMacroPickItem extends vscode.QuickPickItem {
+      index: number;
+    }
+
+    // Extract only the commands that are set.
+    const userMacroPickItems = userMacros
+      .map((userMacroInfo, i) => {
+        return <UserMacroPickItem>{
+          index: i,
+          label: userMacroInfo.name && userMacroInfo.path ? `${LeftPadWithZeros(i + 1, USER_MACRO_NUMBER_DIGITS)}: ${userMacroInfo.name}(${userMacroInfo.path})` : '',
+        };
+      })
+      .filter((userMacroInfo) => {
+        return userMacroInfo.label;
+      });
+
+    var selectedUserMacroPickItem = await vscode.window.showQuickPick(userMacroPickItems, {
+      canPickMany: false,
+      placeHolder: 'Select a User Macro command to run.',
+    });
+    if (selectedUserMacroPickItem) {
+      await runUserMacro(selectedUserMacroPickItem.index);
+    }
+  });
+  context.subscriptions.push(disShowMacroList);
 }
 
 /**
  * Deactivate
  */
-export function deactivate() {}
+export function deactivate() { }
 
 /**
  * Get the path of the macro module from configuration
@@ -114,7 +161,9 @@ export function deactivate() {}
 async function getMacroModulePathFromConfig(configInfo: ConfigInfo) {
   const macroModPath = ConfigManager.getConfigValue<string>(configInfo, CFG_MACRO_MODULE_PATH);
   if (!macroModPath) {
-    await vscode.window.showErrorMessage('The macro file is not set in the configuration.');
+    const selectedItem = await vscode.window.showErrorMessage('The macro file is not set in the configuration.', LABEL_OPEN_SETTINGS);
+    if (selectedItem === LABEL_OPEN_SETTINGS)
+      await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
     return;
   }
 
@@ -250,12 +299,20 @@ async function runUserMacro(index: number) {
   // Get user macro command information from the configuration
   const userMacros = ConfigManager.getConfigValue<UserMacroInfo[]>(configInfo, CFG_USER_MACRO_COMMANDS);
   if (!userMacros || index >= userMacros.length) {
-    await vscode.window.showErrorMessage(`The 'User Macro ${index + 1}' is not set in the 'setting.json'.`);
+    const selectedItem = await vscode.window.showErrorMessage(`The 'User Macro ${LeftPadWithZeros(index + 1, USER_MACRO_NUMBER_DIGITS)}' is not set in the 'settings.json'.`, LABEL_OPEN_SETTINGS);
+    if (selectedItem === LABEL_OPEN_SETTINGS)
+      await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
     return;
   }
 
   // Load a macro and run command
   const userMacro = userMacros[index];
+  if (!(userMacro.name && userMacro.path)) {
+    const selectedItem = await vscode.window.showErrorMessage(`The name or path of the 'User Macro ${LeftPadWithZeros(index + 1, USER_MACRO_NUMBER_DIGITS)}' in the 'settings.json' is empty.`, LABEL_OPEN_SETTINGS);
+    if (selectedItem === LABEL_OPEN_SETTINGS)
+      await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
+    return;
+  }
   const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', userMacro.path);
   await loadAndRunMacro(macroModPathInfo.expanded, async (macroCommands) => {
     await runMacroCommand(macroCommands, userMacro.name);
@@ -345,6 +402,16 @@ function makeMacroModulePathInfo(workspacePath: string, macroModulePath: string)
  */
 function ExpandEnvVars(text: string): string {
   return text.replace(/{([^{}]+)}/g, (m, p1) => process.env[p1] ?? '');
+}
+
+/**
+ * Left padding with zeros
+ * @param num A numeric value to be zero padding
+ * @param digits Total digits
+ * @returns  Zero padded numeric string
+ */
+function LeftPadWithZeros(num: number, digits: number): string {
+  return num.toString().padStart(digits, '0');
 }
 
 /**

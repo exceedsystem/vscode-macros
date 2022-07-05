@@ -20,10 +20,10 @@ export function activate(context: vscode.ExtensionContext) {
    */
   const disSelectMacroFileCommand = vscode.commands.registerCommand('vscode-macros.selectMacroFile', async () => {
     const macroModDirPathInfo = await getMacroModuleDirectoryPathInfo();
-    if (!macroModDirPathInfo) return;
+    if (!macroModDirPathInfo) {return;}
 
     const selectedMacroModule = await selectMacroModule(macroModDirPathInfo.expanded);
-    if (!selectedMacroModule) return;
+    if (!selectedMacroModule) {return;}
 
     // Update a macro module path to the selected one
     await ConfigManager.updateConfigValue(CFG_MACRO_MODULE_PATH, path.join(macroModDirPathInfo.original, selectedMacroModule));
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
    */
   const disOpenMacroDirectoryCommand = vscode.commands.registerCommand('vscode-macros.openMacroDirectory', async () => {
     const macroModDirPathInfo = await getMacroModuleDirectoryPathInfo();
-    if (!macroModDirPathInfo) return;
+    if (!macroModDirPathInfo) {return;}
 
     // Open a macro directory in a new editor window
     const macroDirUri = vscode.Uri.file(macroModDirPathInfo.expanded);
@@ -54,10 +54,10 @@ export function activate(context: vscode.ExtensionContext) {
    */
   const disRunCommand = vscode.commands.registerCommand('vscode-macros.run', async () => {
     const configInfo = ConfigManager.getConfigInfo();
-    if (!configInfo) return;
+    if (!configInfo) {return;}
 
     const macroModPath = await getMacroModulePathFromConfig(configInfo);
-    if (!macroModPath) return;
+    if (!macroModPath) {return;}
 
     const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', macroModPath);
     if (!fs.existsSync(macroModPathInfo.expanded)) {
@@ -68,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Load a macro module and run a command
     await loadAndRunMacro(macroModPathInfo.expanded, async (macroCommands) => {
       const commandName = await selectMacroCommand(macroCommands);
-      if (!commandName) return;
+      if (!commandName) {return;}
 
       await runMacroCommand(macroCommands, commandName);
     });
@@ -109,15 +109,15 @@ export function activate(context: vscode.ExtensionContext) {
    */
   const disShowMacroList = vscode.commands.registerCommand('vscode-macros.runUserMacro', async () => {
     const configInfo = ConfigManager.getConfigInfo();
-    if (!configInfo) return;
+    if (!configInfo) {return;}
 
     const userMacros = ConfigManager.getConfigValue<UserMacroInfo[]>(configInfo, CFG_USER_MACRO_COMMANDS);
-    if (!userMacros) return;
+    if (!userMacros) {return;}
 
     if (userMacros.length === 0) {
       const selectedItem = await vscode.window.showErrorMessage('User Macro not set in the configuration.', LABEL_OPEN_SETTINGS);
       if (selectedItem === LABEL_OPEN_SETTINGS)
-        await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
+        {await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);}
       return;
     }
 
@@ -130,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
       .map((userMacroInfo, i) => {
         return <UserMacroPickItem>{
           index: i,
-          label: userMacroInfo.name && userMacroInfo.path ? `${LeftPadWithZeros(i + 1, USER_MACRO_NUMBER_DIGITS)}: ${userMacroInfo.name}(${userMacroInfo.path})` : '',
+          label: userMacroInfo.name && userMacroInfo.path ? `${leftPadWithZeros(i + 1, USER_MACRO_NUMBER_DIGITS)}: ${userMacroInfo.name}(${userMacroInfo.path})` : '',
         };
       })
       .filter((userMacroInfo) => {
@@ -163,7 +163,7 @@ async function getMacroModulePathFromConfig(configInfo: ConfigInfo) {
   if (!macroModPath) {
     const selectedItem = await vscode.window.showErrorMessage('The macro file is not set in the configuration.', LABEL_OPEN_SETTINGS);
     if (selectedItem === LABEL_OPEN_SETTINGS)
-      await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
+      {await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);}
     return;
   }
 
@@ -176,10 +176,10 @@ async function getMacroModulePathFromConfig(configInfo: ConfigInfo) {
  */
 async function getMacroModuleDirectoryPathInfo() {
   const configInfo = ConfigManager.getConfigInfo();
-  if (!configInfo) return;
+  if (!configInfo) {return;}
 
   const macroModPath = await getMacroModulePathFromConfig(configInfo);
-  if (!macroModPath) return;
+  if (!macroModPath) {return;}
 
   const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', macroModPath);
   const macroModDirPath = path.dirname(macroModPathInfo.expanded);
@@ -200,7 +200,7 @@ async function getMacroModuleDirectoryPathInfo() {
  */
 async function getRunMacroAfterFileSelectionFlag() {
   const configInfo = ConfigManager.getConfigInfo();
-  if (!configInfo) return;
+  if (!configInfo) {return;}
 
   const runMacroFlag = ConfigManager.getConfigValue<boolean>(configInfo, CFG_RUN_MACRO_AFTER_FILE_SELECTION);
 
@@ -294,23 +294,23 @@ async function loadAndRunMacro(macroModPath: string, runCommandCallback: (macroC
  */
 async function runUserMacro(index: number) {
   const configInfo = ConfigManager.getConfigInfo();
-  if (!configInfo) return;
+  if (!configInfo) {return;}
 
   // Get user macro command information from the configuration
   const userMacros = ConfigManager.getConfigValue<UserMacroInfo[]>(configInfo, CFG_USER_MACRO_COMMANDS);
   if (!userMacros || index >= userMacros.length) {
-    const selectedItem = await vscode.window.showErrorMessage(`The 'User Macro ${LeftPadWithZeros(index + 1, USER_MACRO_NUMBER_DIGITS)}' is not set in the 'settings.json'.`, LABEL_OPEN_SETTINGS);
+    const selectedItem = await vscode.window.showErrorMessage(`The 'User Macro ${leftPadWithZeros(index + 1, USER_MACRO_NUMBER_DIGITS)}' is not set in the 'settings.json'.`, LABEL_OPEN_SETTINGS);
     if (selectedItem === LABEL_OPEN_SETTINGS)
-      await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
+      {await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);}
     return;
   }
 
   // Load a macro and run command
   const userMacro = userMacros[index];
   if (!(userMacro.name && userMacro.path)) {
-    const selectedItem = await vscode.window.showErrorMessage(`The name or path of the 'User Macro ${LeftPadWithZeros(index + 1, USER_MACRO_NUMBER_DIGITS)}' in the 'settings.json' is empty.`, LABEL_OPEN_SETTINGS);
+    const selectedItem = await vscode.window.showErrorMessage(`The name or path of the 'User Macro ${leftPadWithZeros(index + 1, USER_MACRO_NUMBER_DIGITS)}' in the 'settings.json' is empty.`, LABEL_OPEN_SETTINGS);
     if (selectedItem === LABEL_OPEN_SETTINGS)
-      await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);
+      {await vscode.commands.executeCommand(CMD_PREFERENCE_OPEN_SETTINGS, VSCODEMACROS_SETTINGS);}
     return;
   }
   const macroModPathInfo = makeMacroModulePathInfo(configInfo.resource?.fsPath ?? '', userMacro.path);
@@ -380,14 +380,14 @@ function isMacroCommands(arg: unknown): arg is MacroCommands {
  */
 function makeMacroModulePathInfo(workspacePath: string, macroModulePath: string): PathInfo {
   // Expand environment variables
-  const expandedChildPath = ExpandEnvVars(macroModulePath);
+  const expandedChildPath = expandEnvVars(macroModulePath);
 
   // If path is absolute then return
   if (path.isAbsolute(expandedChildPath))
-    return <PathInfo>{
+    {return <PathInfo>{
       original: macroModulePath,
       expanded: expandedChildPath,
-    };
+    };}
 
   return <PathInfo>{
     original: path.join(workspacePath, macroModulePath),
@@ -400,7 +400,7 @@ function makeMacroModulePathInfo(workspacePath: string, macroModulePath: string)
  * @param text A string containing environment variables
  * @returns String after environment variables expansion
  */
-function ExpandEnvVars(text: string): string {
+function expandEnvVars(text: string): string {
   return text.replace(/{([^{}]+)}/g, (m, p1) => process.env[p1] ?? '');
 }
 
@@ -410,7 +410,7 @@ function ExpandEnvVars(text: string): string {
  * @param digits Total digits
  * @returns  Zero padded numeric string
  */
-function LeftPadWithZeros(num: number, digits: number): string {
+function leftPadWithZeros(num: number, digits: number): string {
   return num.toString().padStart(digits, '0');
 }
 

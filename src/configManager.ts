@@ -17,8 +17,8 @@ export class ConfigManager {
   static getConfigInfo() {
     const configResource = this.getWorkspaceFolderUri();
     const config = vscode.workspace.getConfiguration(CONFIG_NAME, configResource ?? null);
-    if (!config) return;
-    return <ConfigInfo>{ resource: configResource, config: config }
+    if (!config) {return;}
+    return <ConfigInfo>{ resource: configResource, config: config };
   };
 
   /**
@@ -38,7 +38,7 @@ export class ConfigManager {
    */
   static async updateConfigValue<T>(section: string, value: T | undefined) {
     const cfg = ConfigManager.getConfigInfo();
-    if (!cfg) return;
+    if (!cfg) {return;}
 
     if (!cfg.resource) {
       await cfg.config.update(section, value, true);

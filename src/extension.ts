@@ -1,7 +1,8 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ConfigManager, ConfigInfo } from './configManager';
+import { register, Service } from 'ts-node';
+import * as vscode from 'vscode';
+import { ConfigInfo, ConfigManager } from './configManager';
 
 const CFG_MACRO_MODULE_PATH = 'macroFilePath';
 const CFG_RUN_MACRO_AFTER_FILE_SELECTION = 'runMacroAfterMacroFileSelection';
@@ -10,6 +11,10 @@ const LABEL_OPEN_SETTINGS = 'Open settings';
 const CMD_PREFERENCE_OPEN_SETTINGS = 'workbench.action.openSettings';
 const VSCODEMACROS_SETTINGS = '@ext:EXCEEDSYSTEM.vscode-macros';
 const USER_MACRO_NUMBER_DIGITS = 2;
+const TSCONFIG_FILE_NAME = 'tsconfig.json';
+const TYPESCRIPT_EXTENSION = '.ts';
+
+const vscmGlobal: NodeJS.Global = global;
 
 /**
  * Activate
@@ -85,6 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
       type: 'extensionHost',
       request: 'launch',
       args: ['--extensionDevelopmentPath=${cwd}'],
+      outFiles: ['${cwd}/*.js'],
     });
   });
   context.subscriptions.push(disDebugCommand);
@@ -215,7 +221,7 @@ async function getRunMacroAfterFileSelectionFlag() {
 async function selectMacroModule(macroDirPath: string) {
   const macroModules = fs.readdirSync(macroDirPath).filter((fileName) => {
     const filePath = path.join(macroDirPath, fileName);
-    return fs.statSync(filePath).isFile() && path.extname(fileName) === '.js';
+    return isSupportedMacroFile(filePath);
   });
 
   if (!macroModules || macroModules.length === 0) {
@@ -265,12 +271,21 @@ async function loadAndRunMacro(macroModPath: string, runCommandCallback: (macroC
     return;
   }
 
-  let loadedMacroModulePath = macroModPath;
   try {
-    // Load the macro module into NodeRequire
-    delete require.cache[loadedMacroModulePath];
-    const macroMod = require(macroModPath);
-    loadedMacroModulePath = macroModPath;
+    // Enable TypeScript if tsconfig.json exists
+    const tsConfigFilePath = path.join(path.dirname(macroModPath), TSCONFIG_FILE_NAME);
+    if (fs.existsSync(tsConfigFilePath)) {
+      if (vscmGlobal.tsnService) {
+        vscmGlobal.tsnService.enabled(false);
+      }
+      vscmGlobal.tsnService = register({ project: tsConfigFilePath });
+    } else if (path.extname(macroModPath).toLowerCase() === TYPESCRIPT_EXTENSION) {
+      await vscode.window.showErrorMessage(`${TSCONFIG_FILE_NAME} does not exist.`);
+      return;
+    }
+
+    // Load macro module
+    const macroMod: MacroCommands = require(macroModPath) as MacroCommands;
 
     // Verify commands
     if (!isMacroCommands(macroMod.macroCommands)) {
@@ -278,13 +293,16 @@ async function loadAndRunMacro(macroModPath: string, runCommandCallback: (macroC
       return;
     }
 
-    // return macroMod.macroCommands as IMacroCommands;
+    // return macroMod.macroCommands as IMacroCommands
     await runCommandCallback(macroMod.macroCommands);
   } catch (e) {
     await vscode.window.showErrorMessage(`An error occurred while loading the macro file (${e}).`);
   } finally {
-    // Remove the cached macro module from the NodeRequire cache when the command is completed.
-    delete require.cache[loadedMacroModulePath];
+    if (vscmGlobal.tsnService) {
+      vscmGlobal.tsnService.enabled(false);
+    }
+    // Unload macro module
+    delete require.cache[macroModPath];
   }
 }
 
@@ -338,7 +356,7 @@ async function runMacroCommand(macroCommands: MacroCommands, macroName: string) 
     const ret = await macroCommands[macroName].func();
     if (ret === undefined) {
       // Successful
-      vscode.window.setStatusBarMessage(`Macro '${macroName}' completed.`, 5000);
+      vscode.window.setStatusBarMessage(`'${macroName}' has been completed.`, 5000);
       return;
     } else {
       // Failed
@@ -350,6 +368,17 @@ async function runMacroCommand(macroCommands: MacroCommands, macroName: string) 
     // An uncaught exception occurred
     await vscode.window.showErrorMessage(`An uncaught exception occurred in the macro '${macroName}'(${e}).`);
   }
+}
+
+/**
+ * Check if the file extension is supported
+ *
+ * @param filePath The full path of the file to check.
+ * @returns 'true' if the file is supported
+ */
+function isSupportedMacroFile(filePath: string): boolean {
+  const extensions = ['.js', '.cjs', '.ts'];
+  return fs.statSync(filePath).isFile() && extensions.includes(path.extname(filePath).toLowerCase());
 }
 
 /**
@@ -443,4 +472,15 @@ interface UserMacroInfo {
 interface PathInfo {
   original: string;
   expanded: string;
+}
+
+/**
+ * Custom global class
+ */
+declare global {
+  namespace NodeJS {
+    interface Global {
+      tsnService: Service | undefined;
+    }
+  }
 }

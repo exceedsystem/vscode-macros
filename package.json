@@ -3,10 +3,10 @@
 	"name": "vscode-macros",
 	"displayName": "VSCode Macros",
 	"description": "Add a simple JavaScript macro features to your VSCode",
-	"version": "1.4.1",
+	"version": "1.4.2",
 	"license": "MIT",
 	"engines": {
-		"vscode": "^1.68.1"
+		"vscode": "^1.90.0"
 	},
 	"categories": [
 		"Other"
@@ -24,23 +24,7 @@
 	"bugs": {
 		"url": "https://github.com/exceedsystem/vscode-macros/issues"
 	},
-	"activationEvents": [
-		"onCommand:vscode-macros.selectMacroFile",
-		"onCommand:vscode-macros.openMacroDirectory",
-		"onCommand:vscode-macros.run",
-		"onCommand:vscode-macros.debug",
-		"onCommand:vscode-macros.user1",
-		"onCommand:vscode-macros.user2",
-		"onCommand:vscode-macros.user3",
-		"onCommand:vscode-macros.user4",
-		"onCommand:vscode-macros.user5",
-		"onCommand:vscode-macros.user6",
-		"onCommand:vscode-macros.user7",
-		"onCommand:vscode-macros.user8",
-		"onCommand:vscode-macros.user9",
-		"onCommand:vscode-macros.user10",
-		"onCommand:vscode-macros.runUserMacro"
-	],
+	"activationEvents": [],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
@@ -171,16 +155,16 @@
 		"test": "node ./out/test/runTest.js"
 	},
 	"devDependencies": {
-		"@types/glob": "^7.1.3",
-		"@types/mocha": "^8.0.0",
-		"@types/node": "^12.11.7",
-		"@types/vscode": "^1.68.1",
-		"@typescript-eslint/eslint-plugin": "^4.1.1",
-		"@typescript-eslint/parser": "^4.1.1",
-		"eslint": "^7.9.0",
-		"glob": "^7.1.6",
-		"mocha": "^10.2.0",
-		"typescript": "^4.0.2",
-		"vscode-test": "^1.4.0"
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.9",
+		"@types/node": "^22.7.7",
+		"@types/vscode": "^1.90.0",
+		"@typescript-eslint/eslint-plugin": "^8.10.0",
+		"@typescript-eslint/parser": "^8.10.0",
+		"eslint": "^9.13.0",
+		"glob": "^11.0.0",
+		"mocha": "^10.7.3",
+		"typescript": "^5.6.3",
+		"vscode-test": "^1.6.1"
 	}
 }

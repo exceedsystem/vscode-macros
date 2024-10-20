@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.4.2
+
+* Maintenance release.
+* Changed the required VSCode version to 1.90.0.
+* Added a Japanese translation of the README.
+* Improved the English version of the README.
+
+## 1.4.1
+
+* Maintenance release.
+* Changed the required VSCode version to 1.68.1.
+
 ## 1.4.0
 
 * Added a new command to run registerd user macros.

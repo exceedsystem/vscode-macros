@@ -1,4 +1,4 @@
-# VSCode マクロ
+# VSCode Macros
 
 [英語版README](README.md)
 

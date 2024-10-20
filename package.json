@@ -6,7 +6,8 @@
 	"version": "1.4.2",
 	"license": "MIT",
 	"engines": {
-		"vscode": "^1.90.0"
+		"vscode": "^1.90.0",
+		"node": ">=20.9.0"
 	},
 	"categories": [
 		"Other"

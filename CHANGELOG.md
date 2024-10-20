@@ -4,6 +4,7 @@
 
 * Maintenance release.
 * Changed the required VSCode version to 1.90.0.
+* Updated minimum Node.js version requirement to >=20.9.0
 * Added a Japanese translation of the README.
 * Improved the English version of the README.
 

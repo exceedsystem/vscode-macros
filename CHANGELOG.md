@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.4.3
+
+* Version bump only.
+
 ## 1.4.2
 
 * Maintenance release.
